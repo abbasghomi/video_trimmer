@@ -20,6 +20,9 @@ class TrimEditor extends StatefulWidget {
   /// By default it is set to `BoxFit.fitHeight`.
   final BoxFit fit;
 
+  /// For defining the minimum length of the output video.
+  final Duration minVideoLength;
+
   /// For defining the maximum length of the output video.
   final Duration maxVideoLength;
 
@@ -161,6 +164,7 @@ class TrimEditor extends StatefulWidget {
     @required this.viewerWidth,
     @required this.viewerHeight,
     this.fit = BoxFit.fitHeight,
+    this.minVideoLength = const Duration(milliseconds: 0),
     this.maxVideoLength = const Duration(milliseconds: 0),
     this.circleSize = 5.0,
     this.circleSizeOnDrag = 8.0,
@@ -178,6 +182,7 @@ class TrimEditor extends StatefulWidget {
   })  : assert(viewerWidth != null),
         assert(viewerHeight != null),
         assert(fit != null),
+        assert(minVideoLength != null),
         assert(maxVideoLength != null),
         assert(circleSize != null),
         assert(circleSizeOnDrag != null),
@@ -218,6 +223,7 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
   double _circleSize;
 
   double fraction;
+  double minLengthPixels;
   double maxLengthPixels;
 
   ThumbnailViewer thumbnailWidget;
@@ -287,8 +293,10 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
     if (!(_startPos.dx + details.delta.dx < 0) &&
         !(_startPos.dx + details.delta.dx > _thumbnailViewerW) &&
         !(_startPos.dx + details.delta.dx > _endPos.dx)) {
-      if (maxLengthPixels != null) {
-        if (!(_endPos.dx - _startPos.dx - details.delta.dx > maxLengthPixels)) {
+      if (maxLengthPixels != null && minLengthPixels != null) {
+        if (!(_endPos.dx - _startPos.dx - details.delta.dx > maxLengthPixels ||
+            _endPos.dx - _startPos.dx - details.delta.dx < minLengthPixels
+        )) {
           setState(() {
             if (!(_startPos.dx + details.delta.dx < 0))
               _startPos += details.delta;
@@ -331,8 +339,9 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
     if (!(_endPos.dx + details.delta.dx > _thumbnailViewerW) &&
         !(_endPos.dx + details.delta.dx < 0) &&
         !(_endPos.dx + details.delta.dx < _startPos.dx)) {
-      if (maxLengthPixels != null) {
-        if (!(_endPos.dx - _startPos.dx + details.delta.dx > maxLengthPixels)) {
+      if (maxLengthPixels != null && minLengthPixels != null) {
+        if (!(_endPos.dx - _startPos.dx + details.delta.dx > maxLengthPixels ||
+            _endPos.dx - _startPos.dx + details.delta.dx < minLengthPixels)) {
           setState(() {
             _endPos += details.delta;
             _endFraction = _endPos.dx / _thumbnailViewerW;
@@ -381,13 +390,21 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
 
     Duration totalDuration = videoPlayerController.value.duration;
 
-    if (widget.maxVideoLength > Duration(milliseconds: 0) &&
-        widget.maxVideoLength < totalDuration) {
+    if (widget.maxVideoLength > Duration(milliseconds: 0)) {
       if (widget.maxVideoLength < totalDuration) {
         fraction =
             widget.maxVideoLength.inMilliseconds / totalDuration.inMilliseconds;
 
         maxLengthPixels = _thumbnailViewerW * fraction;
+      }
+    }
+
+    if (widget.minVideoLength > Duration(milliseconds: 0)) {
+      if (widget.minVideoLength < totalDuration) {
+        fraction =
+            widget.minVideoLength.inMilliseconds / totalDuration.inMilliseconds;
+
+        minLengthPixels = _thumbnailViewerW * fraction;
       }
     }
 
