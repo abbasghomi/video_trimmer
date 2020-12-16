@@ -82,7 +82,9 @@ class _TrimmerViewState extends State<TrimmerView> {
                   child: TrimEditor(
                     viewerHeight: 50.0,
                     viewerWidth: MediaQuery.of(context).size.width - 100,
-                    maxVideoLength: Duration(seconds: 6),
+                    initStartDuration: Duration(seconds: 1),
+                    initEndDuration: Duration(seconds: 3),
+                    maxVideoLength: Duration(seconds: 4),
                     minVideoLength: Duration(seconds: 1),
                     onChangeStart: (value) {
                       _startValue = value;
