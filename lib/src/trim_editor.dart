@@ -379,6 +379,7 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
       _startPos = Offset(_initStartPosition, 0);
     }
     _refreshStart();
+    videoPlayerController.seekTo(Duration(milliseconds: _videoStartPos.toInt()));
 
     double endOffsetX;
 
